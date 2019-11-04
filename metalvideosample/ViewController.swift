@@ -13,13 +13,21 @@ import MetalKit
 class ViewController: UIViewController {
 
 	@IBOutlet weak var forVideoView: UIView!
-	
-	static let contentUrlString = "https://dezamisystem.com/movie/hls/blazingstar01.m3u8"
-	private var contentUrl: URL = {
-		let url = URL(string: ViewController.contentUrlString)
-		return url!
+		
+	lazy var contentUrl: URL = {
+		let path = Bundle.main.path(forResource: "PropertyList", ofType: "plist")
+		if let path = path {
+			let dict = NSDictionary(contentsOfFile: path)
+			if let dict = dict {
+				let value = dict["content_url"]
+				if let text = value as? String {
+					return URL(string: text)!
+				}
+			}
+		}
+		return URL(string: "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8")!
 	}()
-
+	
 	private var metalView: MetalView!
 	
 	private let avPlayer = AVPlayer()

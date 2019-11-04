@@ -9,12 +9,6 @@
 import MetalKit
 
 class MetalView: MTKView {
-
-//	enum ClipType {
-//		case all
-//		case left
-//		case right
-//	}
 	
 	// MARK: - Global methods
 	var pixelBuffer: CVPixelBuffer? {

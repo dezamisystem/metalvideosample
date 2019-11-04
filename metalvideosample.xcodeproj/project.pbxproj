@@ -18,6 +18,7 @@
 		D4AAD0C2236CF83C002436AB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D4AAD0C0236CF83C002436AB /* Main.storyboard */; };
 		D4AAD0C4236CF83C002436AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D4AAD0C3236CF83C002436AB /* Assets.xcassets */; };
 		D4AAD0C7236CF83C002436AB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D4AAD0C5236CF83C002436AB /* LaunchScreen.storyboard */; };
+		D4BE5EEE2370542E00D5BFAD /* PropertyList.plist in Resources */ = {isa = PBXBuildFile; fileRef = D4BE5EED2370542E00D5BFAD /* PropertyList.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		D4AAD0C3236CF83C002436AB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D4AAD0C6236CF83C002436AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D4AAD0C8236CF83C002436AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D4BE5EED2370542E00D5BFAD /* PropertyList.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PropertyList.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +88,7 @@
 				D4AAD0C3236CF83C002436AB /* Assets.xcassets */,
 				D4AAD0C5236CF83C002436AB /* LaunchScreen.storyboard */,
 				D4AAD0C8236CF83C002436AB /* Info.plist */,
+				D4BE5EED2370542E00D5BFAD /* PropertyList.plist */,
 			);
 			path = metalvideosample;
 			sourceTree = "<group>";
@@ -149,6 +152,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4AAD0C7236CF83C002436AB /* LaunchScreen.storyboard in Resources */,
+				D4BE5EEE2370542E00D5BFAD /* PropertyList.plist in Resources */,
 				D4AAD0C4236CF83C002436AB /* Assets.xcassets in Resources */,
 				D4AAD0C2236CF83C002436AB /* Main.storyboard in Resources */,
 			);
