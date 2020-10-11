@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D40E372C2532E2D300244D33 /* UIView_Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40E372B2532E2D300244D33 /* UIView_Extension.swift */; };
+		D442476A25209458008D21A2 /* MyLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D442476925209458008D21A2 /* MyLog.swift */; };
 		D449F93B236E61B2003032FD /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D449F93A236E61B2003032FD /* MetalView.swift */; };
 		D449F93D236E686F003032FD /* MTLTexture_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D449F93C236E686F003032FD /* MTLTexture_extension.swift */; };
 		D449F93F236E693E003032FD /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D449F93E236E693E003032FD /* shaders.metal */; };
@@ -22,6 +24,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D40E372B2532E2D300244D33 /* UIView_Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIView_Extension.swift; sourceTree = "<group>"; };
+		D442476925209458008D21A2 /* MyLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyLog.swift; sourceTree = "<group>"; };
 		D449F93A236E61B2003032FD /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		D449F93C236E686F003032FD /* MTLTexture_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTLTexture_extension.swift; sourceTree = "<group>"; };
 		D449F93E236E693E003032FD /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = shaders.metal; sourceTree = "<group>"; };
@@ -51,6 +55,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D442476825209445008D21A2 /* classes */ = {
+			isa = PBXGroup;
+			children = (
+				D40E372B2532E2D300244D33 /* UIView_Extension.swift */,
+				D442476925209458008D21A2 /* MyLog.swift */,
+			);
+			path = classes;
+			sourceTree = "<group>";
+		};
 		D449F939236E6190003032FD /* Metal */ = {
 			isa = PBXGroup;
 			children = (
@@ -82,6 +95,7 @@
 		D4AAD0B9236CF83C002436AB /* metalvideosample */ = {
 			isa = PBXGroup;
 			children = (
+				D442476825209445008D21A2 /* classes */,
 				D449F939236E6190003032FD /* Metal */,
 				D4AAD0BA236CF83C002436AB /* AppDelegate.swift */,
 				D4AAD0BC236CF83C002436AB /* SceneDelegate.swift */,
@@ -122,7 +136,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1120;
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "庄俊亮";
 				TargetAttributes = {
 					D4AAD0B6236CF83C002436AB = {
@@ -171,10 +185,12 @@
 				D449F941236EE972003032FD /* VideoRender.swift in Sources */,
 				D449F93B236E61B2003032FD /* MetalView.swift in Sources */,
 				D4AAD0BF236CF83C002436AB /* ViewController.swift in Sources */,
+				D442476A25209458008D21A2 /* MyLog.swift in Sources */,
 				D449F93F236E693E003032FD /* shaders.metal in Sources */,
 				D449F943236F02E3003032FD /* ComputeMetalView.swift in Sources */,
 				D449F93D236E686F003032FD /* MTLTexture_extension.swift in Sources */,
 				D4AAD0BB236CF83C002436AB /* AppDelegate.swift in Sources */,
+				D40E372C2532E2D300244D33 /* UIView_Extension.swift in Sources */,
 				D4AAD0BD236CF83C002436AB /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -230,6 +246,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -291,6 +308,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
