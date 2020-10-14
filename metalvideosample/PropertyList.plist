@@ -6,5 +6,7 @@
 	<string>https://dezamisystem.com/movie/hls/blazingstar01.m3u8</string>
 	<key>content_url</key>
 	<string>https://dezamisystem.com/movie/vtuber/index.m3u8</string>
+	<key>content_url_aes</key>
+	<string>http://192.168.1.6:8888/multi/index.m3u8</string>
 </dict>
 </plist>

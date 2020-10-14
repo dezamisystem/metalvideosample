@@ -28,8 +28,9 @@ class ViewController: UIViewController {
 			let dict = NSDictionary(contentsOfFile: path)
 			if let dict = dict {
 				let value = dict["content_url"]
-				if let text = value as? String {
-					return URL(string: text)!
+                if let urlText = value as? String {
+                    MyLog.debug("content_url = \(urlText)")
+					return URL(string: urlText)!
 				}
 			}
 		}
@@ -118,13 +119,6 @@ class ViewController: UIViewController {
 			self.metalView?.pixelBuffer = pixelBuffer
 		}
 	}
-
-//    override func viewDidLayoutSubviews() {
-//        super.viewDidLayoutSubviews()
-//        MyLog.debug("")
-//
-////        self.videoSheetView.frame = self.forVideoView.frame
-//    }
     
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
@@ -163,8 +157,6 @@ class ViewController: UIViewController {
                                                selector: #selector(avPlayerDidFailedToPlaytoEndTime(_:)),
                                                name: .AVPlayerItemFailedToPlayToEndTime,
                                                object: nil)
-        // Start to play
-        self.avPlayer.play()
     }
     
     /// Callback : AVPlayerItemDidPlayToEndTime
@@ -252,6 +244,8 @@ class ViewController: UIViewController {
                 MyLog.debug("readyToPlay")
                 MyLog.debug("playerItem.isPlaybackBufferEmpty = \(playerItem.isPlaybackBufferEmpty)")
                 MyLog.debug("playerItem.isPlaybackBufferFull = \(playerItem.isPlaybackBufferFull)")
+                // Start to play
+                self.avPlayer.play()
             case .failed:
                 MyLog.debug("failed")
             default:
