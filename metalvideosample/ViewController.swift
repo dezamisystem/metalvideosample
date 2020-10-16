@@ -42,6 +42,7 @@ class ViewController: UIViewController {
 	private let avPlayer = AVPlayer()
     private var avPlayerItem: AVPlayerItem?
     private var avPlayerItemStatusObservation: NSKeyValueObservation?
+    private var avPlayerItemTimedMetadataObservation: NSKeyValueObservation?
     
     /// Lazy AVPlayerItemVideoOutput
 	lazy var avPlayerItemVideoOutput: AVPlayerItemVideoOutput = {
@@ -77,13 +78,15 @@ class ViewController: UIViewController {
         }
         MyLog.debug("flat=\(isFlat), landscape=\(isLandscape), portrait=\(isPortrait)")
 
-        if isPortrait {
-            self.videoSheetView.frame = self.forVideoView.frame
+        if !isFlat {
+            if isPortrait {
+                self.videoSheetView.frame = self.forVideoView.frame
+            }
+            else {
+                self.videoSheetView.frame = self.view.frame
+            }
+            self.metalView?.frame.size = self.videoSheetView.frame.size
         }
-        else {
-            self.videoSheetView.frame = self.view.frame
-        }
-        self.metalView?.frame.size = self.videoSheetView.frame.size
     }
     
     /// Ready AVPlayerItem
@@ -95,6 +98,7 @@ class ViewController: UIViewController {
         self.avPlayer.replaceCurrentItem(with: self.avPlayerItem)
         self.avPlayerItem!.preferredForwardBufferDuration = 10
         self.startPlayerItemStatusObservation()
+        self.startPlayerItemTimedMetadataObservation()
     }
     
     /// Lazy CADisplayLink
@@ -163,6 +167,7 @@ class ViewController: UIViewController {
     /// - Parameter notification: from AVPlayerItemDidPlayToEndTime
 	@objc private func avPlayerDidReachEnd(_ notification: Notification) {
 		// Infinity Loop
+        let rate = avPlayer.rate
 		self.avPlayer.seek(to: CMTime.zero) { (isFinished) in
 			
             guard let metalView = self.metalView else {
@@ -177,7 +182,8 @@ class ViewController: UIViewController {
 				metalView.clipType = newClipType
 			}
 			
-			self.avPlayer.play()
+//			self.avPlayer.play()
+            self.avPlayer.rate = rate
 		}
 	}
     
@@ -246,10 +252,32 @@ class ViewController: UIViewController {
                 MyLog.debug("playerItem.isPlaybackBufferFull = \(playerItem.isPlaybackBufferFull)")
                 // Start to play
                 self.avPlayer.play()
+                
+//                playerItem.preferredMaximumResolution = CGSize(width: 640, height: 480)
+
             case .failed:
                 MyLog.debug("failed")
             default:
                 break
+            }
+        }
+    }
+    
+    private func startPlayerItemTimedMetadataObservation() {
+        
+        guard self.avPlayerItemTimedMetadataObservation == nil else {
+            return
+        }
+        guard let playerItem = self.avPlayerItem else {
+            return
+        }
+        
+        self.avPlayerItemTimedMetadataObservation = playerItem.observe(\.timedMetadata) { item, change in
+            if let timedMetadata = item.timedMetadata {
+                for meta in timedMetadata {
+                    MyLog.debug("\(meta)")
+                }
+//                playerItem.preferredPeakBitRate = 100000
             }
         }
     }
