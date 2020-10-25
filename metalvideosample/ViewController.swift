@@ -19,7 +19,8 @@ class ViewController: UIViewController {
     
 	@IBOutlet weak var forVideoView: UIView!
     
-    var videoSheetView: UIView = UIView(frame: CGRect.zero)
+    var videoSheetView = UIView(frame: CGRect.zero)
+    var seekSlider = CustomSlider(frame: CGRect.zero)
     
     /// Lazy Content URL
 	lazy var contentUrl: URL = {
@@ -43,6 +44,8 @@ class ViewController: UIViewController {
     private var avPlayerItem: AVPlayerItem?
     private var avPlayerItemStatusObservation: NSKeyValueObservation?
     private var avPlayerItemTimedMetadataObservation: NSKeyValueObservation?
+    private var avPlayerItemPresentationSizeObservation: NSKeyValueObservation?
+    private var timeObserverToken: Any?
     
     /// Lazy AVPlayerItemVideoOutput
 	lazy var avPlayerItemVideoOutput: AVPlayerItemVideoOutput = {
@@ -58,12 +61,40 @@ class ViewController: UIViewController {
         self.videoSheetView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
         self.view.addSubview(self.videoSheetView)
         
+        // Notifications
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(orientationChanged),
                                                name: UIDevice.orientationDidChangeNotification,
                                                object: nil)
         readyPlayerItem()
 	}
+
+//    @objc func onSeekSliderDidChangeValue(_ sender: UISlider) {
+//
+//
+//
+//    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        let topSafeArea: CGFloat
+        let bottomSafeArea: CGFloat
+        let leftSafeArea: CGFloat
+        let rightSafeArea: CGFloat
+        topSafeArea = self.view.safeAreaInsets.top
+        bottomSafeArea = self.view.safeAreaInsets.bottom
+        leftSafeArea = self.view.safeAreaInsets.left
+        rightSafeArea = self.view.safeAreaInsets.right
+        MyLog.debug("topSafeArea = \(topSafeArea), bottomSafeArea = \(bottomSafeArea), leftSafeArea = \(leftSafeArea), rightSafeArea = \(rightSafeArea)")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        MyLog.debug("")
+
+        self.readyToPlay()
+    }
     
     /// 端末向き変化時
     @objc func orientationChanged() {
@@ -78,14 +109,41 @@ class ViewController: UIViewController {
         }
         MyLog.debug("flat=\(isFlat), landscape=\(isLandscape), portrait=\(isPortrait)")
 
+        updateMetalViewFrame()
+    }
+    
+    /// MetalViewフレーム更新
+    private func updateMetalViewFrame() {
+
+        let orientation = UIDevice.current.orientation
+        let isFlat = orientation.isFlat
+        var isLandscape = orientation.isLandscape
+        var isPortrait = orientation.isPortrait
+        if !isLandscape && !isPortrait {
+            isPortrait = UIScreen.main.bounds.width < UIScreen.main.bounds.height;
+            isLandscape = !isPortrait
+        }
         if !isFlat {
             if isPortrait {
                 self.videoSheetView.frame = self.forVideoView.frame
             }
             else {
-                self.videoSheetView.frame = self.view.frame
+                let baseFrame = self.view.frame
+                let width = baseFrame.size.width - self.view.safeAreaInsets.left - self.view.safeAreaInsets.right
+                let height = baseFrame.size.height - self.view.safeAreaInsets.top - self.view.safeAreaInsets.bottom
+                let pos_x = baseFrame.origin.x + self.view.safeAreaInsets.left
+                let pos_y = baseFrame.origin.y + self.view.safeAreaInsets.top
+                self.videoSheetView.frame = CGRect(x: pos_x, y: pos_y, width: width, height: height)
             }
             self.metalView?.frame.size = self.videoSheetView.frame.size
+            // Video UI
+            if let metalView = self.metalView {
+                let seekHeight: CGFloat = 20
+                self.seekSlider.frame = CGRect(x: metalView.frame.origin.x,
+                                               y: metalView.frame.height - seekHeight - 20,
+                                               width: metalView.frame.width,
+                                               height: seekHeight)
+            }
         }
     }
     
@@ -124,12 +182,21 @@ class ViewController: UIViewController {
 		}
 	}
     
-	override func viewDidAppear(_ animated: Bool) {
-		super.viewDidAppear(animated)
-        MyLog.debug("")
-
-        self.readyToPlay()
-	}
+    // TODO: MetalView clip
+    private func clipTestMetalView() {
+        
+        guard let metalView = self.metalView else {
+            return
+        }
+        var clipTypeIndex = metalView.clipType.rawValue
+        clipTypeIndex += 1
+        if clipTypeIndex > VideoRender.ClipType.right.rawValue {
+            clipTypeIndex = VideoRender.ClipType.all.rawValue
+        }
+        if let newClipType = VideoRender.ClipType(rawValue: clipTypeIndex) {
+            metalView.clipType = newClipType
+        }
+    }
     
     /// Ready to play
     private func readyToPlay() {
@@ -140,8 +207,11 @@ class ViewController: UIViewController {
                 MyLog.debug("Metal Error : \(error.domain)")
             }
         }
-        self.videoSheetView.addSubview(metalView!)
-        
+        self.updateMetalViewFrame()
+        self.videoSheetView.addSubview(self.metalView!)
+        self.seekSlider.backgroundColor = UIColor(white: 0.75, alpha: 1)
+        self.videoSheetView.addSubview(self.seekSlider)
+
         //  Resume the display link
         displayLink.isPaused = false
         // Set notification
@@ -169,20 +239,6 @@ class ViewController: UIViewController {
 		// Infinity Loop
         let rate = avPlayer.rate
 		self.avPlayer.seek(to: CMTime.zero) { (isFinished) in
-			
-            guard let metalView = self.metalView else {
-                return
-            }
-			var clipTypeIndex = metalView.clipType.rawValue
-			clipTypeIndex += 1
-			if clipTypeIndex > VideoRender.ClipType.right.rawValue {
-				clipTypeIndex = VideoRender.ClipType.all.rawValue
-			}
-			if let newClipType = VideoRender.ClipType(rawValue: clipTypeIndex) {
-				metalView.clipType = newClipType
-			}
-			
-//			self.avPlayer.play()
             self.avPlayer.rate = rate
 		}
 	}
@@ -234,7 +290,7 @@ class ViewController: UIViewController {
         }
     }
     
-    /// 監視開始
+    /// 監視開始・AVPlayerItem.status
     private func startPlayerItemStatusObservation() {
         
         guard self.avPlayerItemStatusObservation == nil else {
@@ -243,18 +299,20 @@ class ViewController: UIViewController {
         guard let playerItem = self.avPlayerItem else {
             return
         }
-                
-        self.avPlayerItemStatusObservation = playerItem.observe(\.status) { item, change in
+        self.avPlayerItemStatusObservation = playerItem.observe(\.status) {[weak self] item, change in
             switch item.status {
             case .readyToPlay:
                 MyLog.debug("readyToPlay")
                 MyLog.debug("playerItem.isPlaybackBufferEmpty = \(playerItem.isPlaybackBufferEmpty)")
                 MyLog.debug("playerItem.isPlaybackBufferFull = \(playerItem.isPlaybackBufferFull)")
-                // Start to play
-                self.avPlayer.play()
                 
-//                playerItem.preferredMaximumResolution = CGSize(width: 640, height: 480)
-
+                // Start to play
+                self?.startPlayerItemPresentationSizeObservation()
+                self?.avPlayer.play()
+                
+                // Start to update UI
+                self?.addPeriodicTimeObserver()
+                
             case .failed:
                 MyLog.debug("failed")
             default:
@@ -263,6 +321,20 @@ class ViewController: UIViewController {
         }
     }
     
+    func addPeriodicTimeObserver() {
+        
+        let time = CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        self.timeObserverToken = self.avPlayer.addPeriodicTimeObserver(forInterval: time, queue: .main, using: { [weak self] time in
+            if let playerItem = self?.avPlayerItem {
+                let duration = playerItem.duration.seconds
+                let seconds = time.seconds
+                let percent = seconds / duration
+                self?.seekSlider.value = Float(percent)
+            }
+        })
+    }
+    
+    /// 監視開始・AVPlayerItem.timedMetadata
     private func startPlayerItemTimedMetadataObservation() {
         
         guard self.avPlayerItemTimedMetadataObservation == nil else {
@@ -271,14 +343,29 @@ class ViewController: UIViewController {
         guard let playerItem = self.avPlayerItem else {
             return
         }
-        
         self.avPlayerItemTimedMetadataObservation = playerItem.observe(\.timedMetadata) { item, change in
             if let timedMetadata = item.timedMetadata {
                 for meta in timedMetadata {
                     MyLog.debug("\(meta)")
                 }
-//                playerItem.preferredPeakBitRate = 100000
+//                playerItem.preferredPeakBitRate = 5280160
             }
+        }
+    }
+    
+    /// 監視開始・AVPlayerItem.presentationSize
+    private func startPlayerItemPresentationSizeObservation() {
+        
+        guard self.avPlayerItemPresentationSizeObservation == nil else {
+            return
+        }
+        guard let playerItem = self.avPlayerItem else {
+            return
+        }
+        self.avPlayerItemPresentationSizeObservation = playerItem.observe(\.presentationSize) { item, change in
+            
+            MyLog.debug("\(item.presentationSize)")
+//            playerItem.preferredPeakBitRate = 5617331
         }
     }
 }

@@ -14,6 +14,7 @@
 		D449F93F236E693E003032FD /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D449F93E236E693E003032FD /* shaders.metal */; };
 		D449F941236EE972003032FD /* VideoRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = D449F940236EE972003032FD /* VideoRender.swift */; };
 		D449F943236F02E3003032FD /* ComputeMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D449F942236F02E3003032FD /* ComputeMetalView.swift */; };
+		D48C405C25454B3300C9A54B /* CustomSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48C405B25454B3300C9A54B /* CustomSlider.swift */; };
 		D4AAD0BB236CF83C002436AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AAD0BA236CF83C002436AB /* AppDelegate.swift */; };
 		D4AAD0BD236CF83C002436AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AAD0BC236CF83C002436AB /* SceneDelegate.swift */; };
 		D4AAD0BF236CF83C002436AB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AAD0BE236CF83C002436AB /* ViewController.swift */; };
@@ -33,6 +34,7 @@
 		D449F942236F02E3003032FD /* ComputeMetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComputeMetalView.swift; sourceTree = "<group>"; };
 		D44A9F74248C78F1007F8AC8 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
 		D44A9F75248C78F2007F8AC8 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		D48C405B25454B3300C9A54B /* CustomSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSlider.swift; sourceTree = "<group>"; };
 		D4AAD0B7236CF83C002436AB /* metalvideosample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = metalvideosample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4AAD0BA236CF83C002436AB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D4AAD0BC236CF83C002436AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 			children = (
 				D40E372B2532E2D300244D33 /* UIView_Extension.swift */,
 				D442476925209458008D21A2 /* MyLog.swift */,
+				D48C405B25454B3300C9A54B /* CustomSlider.swift */,
 			);
 			path = classes;
 			sourceTree = "<group>";
@@ -184,6 +187,7 @@
 			files = (
 				D449F941236EE972003032FD /* VideoRender.swift in Sources */,
 				D449F93B236E61B2003032FD /* MetalView.swift in Sources */,
+				D48C405C25454B3300C9A54B /* CustomSlider.swift in Sources */,
 				D4AAD0BF236CF83C002436AB /* ViewController.swift in Sources */,
 				D442476A25209458008D21A2 /* MyLog.swift in Sources */,
 				D449F93F236E693E003032FD /* shaders.metal in Sources */,

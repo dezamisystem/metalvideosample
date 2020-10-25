@@ -46,7 +46,11 @@ class MetalView: MTKView {
 	required init(coder: NSCoder) {
 		super.init(coder: coder)
 	}
-	
+    
+    /// コンストラクタ
+    /// - Parameters:
+    ///   - frameRect: 親フレーム
+    ///   - callback: コールバッック
 	init(frame frameRect: CGRect, callback: (NSError?) -> Void) {
 		// Get the default metal device.
 		guard let metalDevice = MTLCreateSystemDefaultDevice() else {
