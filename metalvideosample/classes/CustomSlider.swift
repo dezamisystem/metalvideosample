@@ -8,10 +8,12 @@ import UIKit
 class CustomSlider: UISlider {
 
     override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        // thumb以外のタッチイベントを有効にする
         return true
     }
     
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        // タッチイベント判定エリアを広げる
         var wideBounds = bounds
         wideBounds.size.height += 10.0
         return wideBounds.contains(point)
