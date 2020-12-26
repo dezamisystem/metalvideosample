@@ -10,6 +10,14 @@ import UIKit
 import AVFoundation
 import MetalKit
 
+@objc class CountObject: NSObject {
+    @objc dynamic var count: Int = 0
+}
+
+@objc class CountContainer: NSObject {
+    @objc dynamic var object = CountObject()
+}
+
 class ViewController: UIViewController {
 
     enum Result {
@@ -21,6 +29,7 @@ class ViewController: UIViewController {
     
     var videoSheetView = UIView(frame: CGRect.zero)
     var seekSlider = CustomSlider(frame: CGRect.zero)
+    var videoIndicatorView = UIActivityIndicatorView()
     
     /// Lazy Content URL
 	lazy var contentUrl: URL = {
@@ -39,15 +48,15 @@ class ViewController: UIViewController {
 	}()
 	
 	private var metalView: MetalView?
-	
 	private let avPlayer = AVPlayer()
     private var avPlayerItem: AVPlayerItem?
     private var avPlayerItemStatusObservation: NSKeyValueObservation?
     private var avPlayerItemTimedMetadataObservation: NSKeyValueObservation?
     private var avPlayerItemPresentationSizeObservation: NSKeyValueObservation?
     private var timeObserverToken: Any?
-    
     private var ratePrevSeek: Float = 0
+    private var seekCountContainer = CountContainer()
+    private var calledSeekObservation: NSKeyValueObservation?
 
     /// Lazy AVPlayerItemVideoOutput
 	lazy var avPlayerItemVideoOutput: AVPlayerItemVideoOutput = {
@@ -120,6 +129,7 @@ class ViewController: UIViewController {
             isLandscape = !isPortrait
         }
         if !isFlat {
+            // Video Sheet View
             if isPortrait {
                 self.videoSheetView.frame = self.forVideoView.frame
             }
@@ -131,15 +141,16 @@ class ViewController: UIViewController {
                 let pos_y = baseFrame.origin.y + self.view.safeAreaInsets.top
                 self.videoSheetView.frame = CGRect(x: pos_x, y: pos_y, width: width, height: height)
             }
+            // metal View
             self.metalView?.frame.size = self.videoSheetView.frame.size
-            // Video UI
-            if let metalView = self.metalView {
-                let seekHeight: CGFloat = 20
-                self.seekSlider.frame = CGRect(x: metalView.frame.origin.x,
-                                               y: metalView.frame.height - seekHeight - 20,
-                                               width: metalView.frame.width,
-                                               height: seekHeight)
-            }
+            // Slider
+            let seekHeight: CGFloat = 20
+            self.seekSlider.frame = CGRect(x: self.videoSheetView.frame.origin.x,
+                                           y: self.videoSheetView.frame.height - seekHeight - 20,
+                                           width: self.videoSheetView.frame.width,
+                                           height: seekHeight)
+            // Indicator
+            self.videoIndicatorView.center = self.videoSheetView.center
         }
     }
     
@@ -152,7 +163,9 @@ class ViewController: UIViewController {
         self.avPlayer.replaceCurrentItem(with: self.avPlayerItem)
         self.avPlayerItem!.preferredForwardBufferDuration = 10
         self.startPlayerItemStatusObservation()
+        #if TEST_METADATA
         self.startPlayerItemTimedMetadataObservation()
+        #endif
     }
     
     /// Lazy CADisplayLink
@@ -205,13 +218,19 @@ class ViewController: UIViewController {
         }
         self.updateMetalViewFrame()
         self.videoSheetView.addSubview(self.metalView!)
+        // Slider
         self.seekSlider.backgroundColor = UIColor(white: 0.75, alpha: 1)
         self.seekSlider.isContinuous = true
         self.seekSlider.addTarget(self, action: #selector(onSeekBegin(_:)), for: UIControl.Event.touchDown)
         self.seekSlider.addTarget(self, action: #selector(onSeekMove(_:)), for: UIControl.Event.valueChanged)
         self.seekSlider.addTarget(self, action: #selector(onSeekEnd(_:)), for: UIControl.Event.touchUpInside)
-        self.seekSlider.addTarget(self, action: #selector(onSeekEnd(_:)), for: UIControl.Event.touchUpOutside)
+        self.seekSlider.addTarget(self, action: #selector(onSeekEnd(_:)), for: UIControl.Event.touchCancel)
         self.videoSheetView.addSubview(self.seekSlider)
+        // Indicator
+        self.videoIndicatorView.style = .whiteLarge
+        self.videoIndicatorView.hidesWhenStopped = true
+        self.videoSheetView.addSubview(self.videoIndicatorView)
+        self.videoIndicatorView.startAnimating()
 
         //  Resume the display link
         displayLink.isPaused = false
@@ -250,20 +269,12 @@ class ViewController: UIViewController {
         MyLog.debug("Seek position = \(positionSeconds)[s]")
         // シーク（コンマ秒単位まで指定）
         self.avPlayer.seek(to: position, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero) { result in
-            completion(result)
-        }
-    }
-    
-    /// シークを同期で実行
-    /// - Parameters:
-    ///   - value: 位置％
-    ///   - completion: クロージャー
-    private func seekSyncronized(value: Float, completion: @escaping (_ result: Bool)->Void) {
-        
-        // Syncronized
-        let serialQueue = DispatchQueue(label: "com.dezamisystem.seek", qos: .userInitiated)
-        serialQueue.sync {[weak self] in
-            self?.seekWithSliderValue(value: value, completion: completion)
+
+            // Syncronized
+            let serialQueue = DispatchQueue(label: "com.dezamisystem.seek", qos: .userInitiated)
+            serialQueue.sync {
+                completion(result)
+            }
         }
     }
         
@@ -274,13 +285,10 @@ class ViewController: UIViewController {
         
         // シークバー移動の停止
         self.removePeriodicTimeObserver()
-        //再生は止める
-        self.ratePrevSeek = self.avPlayer.rate
-        self.avPlayer.rate = 0
-        // シーク開始
-        self.seekSyncronized(value: self.seekSlider.value) { _ in
-            // なにもしない
-        }
+        // シークサムネイルの変更
+        self.seekSlider.value = self.seekSlider.touchedValue
+        // Indicator
+        self.videoIndicatorView.startAnimating()
     }
     
     /// シーク移動時
@@ -288,8 +296,14 @@ class ViewController: UIViewController {
     @objc func onSeekMove(_ sender: UITapGestureRecognizer) {
         MyLog.debug()
         
-        self.seekSyncronized(value: self.seekSlider.value) { _ in
-            // なにもしない
+        // シーク開始
+        self.seekCountContainer.object.count += 1
+        self.seekWithSliderValue(value: self.seekSlider.value) {[weak self] _ in
+            // シーク完了
+            guard let `self` = self else {
+                return
+            }
+            self.seekCountContainer.object.count -= 1
         }
     }
     
@@ -298,15 +312,27 @@ class ViewController: UIViewController {
     @objc func onSeekEnd(_ sender: UITapGestureRecognizer) {
         MyLog.debug()
         
-        // シーク開始
-        self.seekSyncronized(value: self.seekSlider.value) {[weak self] _ in
+        // シーク完了の監視
+        guard self.calledSeekObservation == nil else {
+            return
+        }
+        self.calledSeekObservation = self.seekCountContainer.object.observe(\.count) {[weak self] owner, changed in
+            MyLog.debug("Called Seek Count = \(owner.count)")
+            guard owner.count <= 0 else {
+                return
+            }
             guard let `self` = self else {
                 return
             }
             // シークバー移動の開始
             self.addPeriodicTimeObserver()
-            // 再生状態の復帰
-            self.avPlayer.rate = self.ratePrevSeek
+            // シーク完了監視の終了
+            self.calledSeekObservation?.invalidate()
+            self.calledSeekObservation = nil
+            // Main Thread
+            DispatchQueue.main.async {[weak self] in
+                self?.videoIndicatorView.stopAnimating()
+            }
         }
     }
     
@@ -380,10 +406,9 @@ class ViewController: UIViewController {
         self.avPlayerItemStatusObservation = playerItem.observe(\.status) {[weak self] item, change in
             switch item.status {
             case .readyToPlay:
-                // メインスレッドで実行
                 MyLog.debug("readyToPlay")
-                MyLog.debug("playerItem.isPlaybackBufferEmpty = \(playerItem.isPlaybackBufferEmpty)")
-                MyLog.debug("playerItem.isPlaybackBufferFull = \(playerItem.isPlaybackBufferFull)")
+                MyLog.debug("playerItem.isPlaybackBufferEmpty = \(item.isPlaybackBufferEmpty)")
+                MyLog.debug("playerItem.isPlaybackBufferFull = \(item.isPlaybackBufferFull)")
                     
                 // Start to play
                 self?.startPlayerItemPresentationSizeObservation()
@@ -396,6 +421,11 @@ class ViewController: UIViewController {
                 self?.avPlayerItemStatusObservation?.invalidate()
                 self?.avPlayerItemStatusObservation = nil
                 
+                // Main Thread
+                DispatchQueue.main.async {[weak self] in
+                    self?.videoIndicatorView.stopAnimating()
+                }
+                
             case .failed:
                 MyLog.debug("failed")
             default:
@@ -404,21 +434,22 @@ class ViewController: UIViewController {
         }
     }
     
-    /// 開始・ポジション監視
+    /// 監視開始・ポジション
     func addPeriodicTimeObserver() {
         
-        let time = CMTime(seconds: 1.0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        let time = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         self.timeObserverToken = self.avPlayer.addPeriodicTimeObserver(forInterval: time, queue: .main, using: { [weak self] time in
-            if let playerItem = self?.avPlayerItem {
-                let duration = playerItem.duration.seconds
-                let seconds = time.seconds
-                let percent = seconds / duration
-                self?.seekSlider.value = Float(percent)
+            guard let playerItem = self?.avPlayerItem else {
+                return
             }
+            let duration = playerItem.duration.seconds
+            let seconds = time.seconds
+            let percent = seconds / duration
+            self?.seekSlider.value = Float(percent)
         })
     }
     
-    /// 終了・ポジション監視
+    /// 監視終了・ポジション
     func removePeriodicTimeObserver() {
         
         guard let token = self.timeObserverToken else {
@@ -442,7 +473,6 @@ class ViewController: UIViewController {
                 for meta in timedMetadata {
                     MyLog.debug("\(meta)")
                 }
-//                playerItem.preferredPeakBitRate = 5280160
             }
         }
     }
@@ -457,10 +487,17 @@ class ViewController: UIViewController {
             return
         }
         self.avPlayerItemPresentationSizeObservation = playerItem.observe(\.presentationSize) { item, change in
-            
             MyLog.debug("\(item.presentationSize)")
-//            playerItem.preferredPeakBitRate = 5617331
         }
     }
+    
+    /// ビットレートテスト
+    private func testBitrate() {
+        guard let playerItem = self.avPlayerItem else {
+            return
+        }
+        playerItem.preferredPeakBitRate = 5280160
+    }
+    
 }
 

@@ -7,7 +7,16 @@ import UIKit
 
 class CustomSlider: UISlider {
 
+    private(set) var touchedValue: Float = 0
+    
     override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        
+        let tapPoint = touch.location(in: self)
+        let sliderLength = bounds.width - bounds.origin.x
+        let tapOriginX = tapPoint.x - bounds.origin.x
+        let percent = Float(tapOriginX / sliderLength)
+        touchedValue = min(max(percent, 0), 1)
+        
         // thumb以外のタッチイベントを有効にする
         return true
     }
@@ -19,12 +28,4 @@ class CustomSlider: UISlider {
         return wideBounds.contains(point)
     }
     
-    /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
-    }
-    */
-
 }
